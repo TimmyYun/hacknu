@@ -29,12 +29,11 @@ def getSupplies(request):
         barcode = request.data['barcode']
         from_time = request.data['fromTime']
         to_time = request.data['toTime']
-        supply_filter = Q(barcode=barcode) & Q(supply_time__gte=from_time) & Q(supply_time__lte=to_time)
-
+        supply_filter = Q(barcode=barcode) & Q(supplyTime__gte=from_time) & Q(supplyTime__lte=to_time)
         supply = Supply.objects.filter(supply_filter)
         serializer = SupplySerializer(supply, many=True)
         return Response(serializer.data)
-
+    
     if request.method == "POST":
         max_id = Supply.objects.aggregate(models.Max('id'))['id__max']
         if max_id is None:
@@ -142,27 +141,27 @@ def getReport(request):
     toTime = request.data['toTime']
     barcode = request.data['barcode']
 
-    supply_q = Q(barcode=barcode) & Q(supply_time__lte=toTime)
+    supply_q = Q(barcode=barcode) & Q(supplyTime__lte=toTime)
 
-    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supply_time').order_by('supply_time')
+    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supplyTime').order_by('supplyTime')
     
 
-    sale_q = Q(barcode=barcode) & Q(sale_time__lte=toTime)
+    sale_q = Q(barcode=barcode) & Q(saleTime__lte=toTime)
     
-    sale = Sale.objects.filter(sale_q).values('quantity', 'price', 'sale_time').order_by('sale_time')
+    sale = Sale.objects.filter(sale_q).values('quantity', 'price', 'saleTime').order_by('saleTime')
     sum_margin = 0
     quantity = 0
     revenue = 0
     i = 0
     for s in sale:
-        if s['sale_time'] <= fromTime:
+        if s['saleTime'] <= fromTime:
             sum_margin = 0
             quantity = 0
             revenue = 0
-        if s['sale_time'] >= fromTime:
+        if s['saleTime'] >= fromTime:
             quantity += s['quantity']
             revenue += s['quantity'] * s['price']
-        while i < len(supply) and s['quantity'] > 0 and s['sale_time'] >= supply[i]['supply_time']:
+        while i < len(supply) and s['quantity'] > 0 and s['saleTime'] >= supply[i]['supplyTime']:
             if s['quantity'] >= supply[i]['quantity']:
                 sum_margin += supply[i]['quantity'] * (s['price'] - supply[i]['price'])
             else:
@@ -174,7 +173,7 @@ def getReport(request):
             s['quantity'] -= supply[i]['quantity']
             i += 1
 
-        if (i >= 3 or s['sale_time'] < supply[i]['supply_time']):
+        if (i >= 3 or s['saleTime'] < supply[i]['supplyTime']):
             sum_margin += s['quantity'] * s['price']
 
     finalTime = time.time() - startTime

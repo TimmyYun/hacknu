@@ -192,7 +192,7 @@ elif option1 == 'Sales':
                                   value=default_enddate, key=1)
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
-        supplytime = datetime.combine(to_date, to_time)
+        saletime = datetime.combine(to_date, to_time)
 
         submitted = st.button("Submit")
         if submitted:
@@ -200,7 +200,7 @@ elif option1 == 'Sales':
             todo = {"barcode": barcode,
                     "price": price, 
                     "quantity": quantity, 
-                    "saleTime": supplytime.isoformat()}
+                    "saleTime": saletime.isoformat()}
             response = requests.post(api_url, json=todo)
             data = response.json()
             if data:

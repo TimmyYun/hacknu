@@ -7,11 +7,11 @@ class Sale(models.Model):
     barcode = models.BigIntegerField(blank=True)
     quantity = models.IntegerField(default=1, blank=True)
     price = models.IntegerField(default=0, blank=True)
-    sale_time = models.DateTimeField(auto_now_add=True, blank=True)
+    saleTime = models.DateTimeField(auto_now_add=True, blank=True)
     
     class Meta:
         indexes = [
-            models.Index(fields=["barcode", "sale_time"]),
+            models.Index(fields=["barcode", "saleTime"]),
         ]
         db_table = "sale"
 
@@ -21,10 +21,10 @@ class Supply(models.Model):
     barcode = models.BigIntegerField()
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
-    supply_time = models.DateTimeField(auto_now_add=True)
+    supplyTime = models.DateTimeField(auto_now_add=True)
     
     class Meta:
         indexes = [
-            models.Index(fields=["barcode", "supply_time"]),
+            models.Index(fields=["barcode", "supplyTime"]),
         ]
         db_table = "supply"

@@ -1,4 +1,4 @@
-insert into supply (id, barcode, quantity, price, supply_time)
+insert into supply (id, barcode, quantity, price, supplyTime)
 values  
 (1, 4870204391510, 120, 279, '2022-01-03 09:20:00'),
         (2, 4680036912629, 240, 278, '2022-01-03 09:21:00'),
