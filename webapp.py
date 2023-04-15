@@ -28,15 +28,24 @@ if option1 == 'Supply':
         barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
 
         default_startdate_str = "2022/01/01"
+        default_starttime = "12:00:00"
         default_startdate = datetime.strptime(
             default_startdate_str, '%Y/%m/%d')
-        from_date = st.date_input(
-            "Enter a date and time", value=default_startdate, key=1)
+        c1, c2 =  st.columns(2)
+        with c1:
+            from_date = st.date_input(
+                "Enter a date", value=default_startdate, key=1)
+        with c2:
+            from_time = st.time_input("Enter a time", key =3)
         
         default_enddate_str = "2022/12/31"
         default_enddate = datetime.strptime(default_enddate_str, '%Y/%m/%d')
-        to_date = st.date_input("Enter a date and time",
-                                value=default_enddate, key=2)
+        c3, c4 =  st.columns(2)
+        with c3:
+            to_date = st.date_input("Enter a date and time",
+                                    value=default_enddate, key=2)
+        with c4:
+            to_time = st.time_input("Enter a time", key =4)
         
         submitted = st.button("Submit")
         if submitted:
