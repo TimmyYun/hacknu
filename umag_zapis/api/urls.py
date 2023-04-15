@@ -12,5 +12,8 @@ urlpatterns = [
     path("sales/", views.getSales, name="Sales"),
     path("sales/<str:pk>/", views.getSale, name="Sale"),
 
+    # Report
+    path("report/", views.getReport, name="Report"),
+
 
 ]

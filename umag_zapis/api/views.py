@@ -63,12 +63,12 @@ def getSupply(request, pk):
             instance=supply, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'DELETE':
         supply.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
 
@@ -84,10 +84,19 @@ def getSales(request):
         return Response(serializer.data)
 
     if request.method == "POST":
-        serializer = SaleSerializer(data=request.data)
+        max_id = Sale.objects.aggregate(models.Max('id'))['id__max']
+        if max_id is None:
+            max_id = 0
+
+        new_id = max_id + 1
+
+        data = request.data
+        data['id'] = new_id
+        serializer = SaleSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({"id": new_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -109,9 +118,17 @@ def getSale(request, pk):
             instance=sale, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == 'DELETE':
         sale.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
+
+@api_view(['GET', 'POST'])
+def getReport(request):
+    fromTime = request.data['fromTime']
+    toTime = request.data['toTime']
+    barcode = request.data['barcode']
+
+    
