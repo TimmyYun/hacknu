@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Sale(models.Model):
+    id = models.BigIntegerField(primary_key=True, blank=True)
     barcode = models.BigIntegerField()
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
@@ -16,6 +17,7 @@ class Sale(models.Model):
 
 
 class Supply(models.Model):
+    id = models.BigIntegerField(primary_key=True)
     barcode = models.BigIntegerField()
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)

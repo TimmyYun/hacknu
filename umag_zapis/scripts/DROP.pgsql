@@ -14,3 +14,6 @@ DROP TABLE my_cache_table;
 
 DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
+
+DELETE FROM supply;
+DELETE FROM sale;

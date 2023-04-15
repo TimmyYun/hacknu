@@ -12,3 +12,8 @@ class SupplySerializer(ModelSerializer):
     class Meta:
         model = Supply
         fields = '__all__'
+
+class SaleSerializer(ModelSerializer):
+    class Meta:
+        model = Sale
+        fields = '__all__'
