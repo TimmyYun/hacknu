@@ -3,10 +3,11 @@ from api.serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Q
+from django.db.models import Q, Sum, F
 from datetime import datetime
 
-import time 
+import time
+
 
 @api_view(["GET"])
 def getRoutes(request):
@@ -18,7 +19,8 @@ def getRoutes(request):
     ]
     return Response(routes)
 
-#Supply
+# Supply
+
 
 @api_view(["GET", "POST"])
 def getSupplies(request):
@@ -26,32 +28,32 @@ def getSupplies(request):
     List all supplies, or create a new supply.
     """
     if request.method == "GET":
-        barcode = request.data['barcode']
-        from_time = request.data['fromTime']
-        to_time = request.data['toTime']
-        supply_filter = Q(barcode=barcode) & Q(supplyTime__gte=from_time) & Q(supplyTime__lte=to_time)
+        barcode = request.data["barcode"]
+        from_time = request.data["fromTime"]
+        to_time = request.data["toTime"]
+        supply_filter = Q(barcode=barcode) & Q(
+            supplyTime__gte=from_time) & Q(supplyTime__lte=to_time)
         supply = Supply.objects.filter(supply_filter)
         serializer = SupplySerializer(supply, many=True)
         return Response(serializer.data)
-    
+
     if request.method == "POST":
-        max_id = Supply.objects.aggregate(models.Max('id'))['id__max']
+        max_id = Supply.objects.aggregate(models.Max("id"))["id__max"]
         if max_id is None:
             max_id = 0
 
         new_id = max_id + 1
 
         data = request.data
-        data['id'] = new_id
+        data["id"] = new_id
         serializer = SupplySerializer(data=data)
-        breakpoint()
         if serializer.is_valid():
             serializer.save()
             return Response({"id": new_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(["GET", "PUT", "DELETE"])
 def getSupply(request, pk):
     """
     Retrieve, update or delete a supply.
@@ -61,11 +63,11 @@ def getSupply(request, pk):
     except Supply.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         serializer = SupplySerializer(supply, many=False)
         return Response(serializer.data)
 
-    if request.method == 'PUT':
+    if request.method == "PUT":
         serializer = SupplySerializer(
             instance=supply, data=request.data)
         if serializer.is_valid():
@@ -73,11 +75,9 @@ def getSupply(request, pk):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         supply.delete()
         return Response(status=status.HTTP_200_OK)
-
-
 
 
 @api_view(["GET", "POST"])
@@ -91,14 +91,14 @@ def getSales(request):
         return Response(serializer.data)
 
     if request.method == "POST":
-        max_id = Sale.objects.aggregate(models.Max('id'))['id__max']
+        max_id = Sale.objects.aggregate(models.Max("id"))["id__max"]
         if max_id is None:
             max_id = 0
 
         new_id = max_id + 1
 
         data = request.data
-        data['id'] = new_id
+        data["id"] = new_id
         serializer = SaleSerializer(data=data)
 
         if serializer.is_valid():
@@ -106,7 +106,8 @@ def getSales(request):
             return Response({"id": new_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+
+@api_view(["GET", "PUT", "DELETE"])
 def getSale(request, pk):
     """
     Retrieve, update or delete a sale.
@@ -116,11 +117,11 @@ def getSale(request, pk):
     except Sale.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
+    if request.method == "GET":
         serializer = SaleSerializer(sale, many=False)
         return Response(serializer.data)
 
-    if request.method == 'PUT':
+    if request.method == "PUT":
         serializer = SaleSerializer(
             instance=sale, data=request.data)
         if serializer.is_valid():
@@ -128,58 +129,88 @@ def getSale(request, pk):
             return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    if request.method == 'DELETE':
+    if request.method == "DELETE":
         sale.delete()
         return Response(status=status.HTTP_200_OK)
 
-@api_view(['GET', 'POST'])
+
+@api_view(["GET", "POST"])
 def getReport(request):
 
     startTime = time.time()
 
-    fromTime = datetime.strptime(request.data['fromTime'], "%Y-%m-%dT%H:%M:%S")
-    toTime = request.data['toTime']
-    barcode = request.data['barcode']
+    fromTime = datetime.strptime(request.data["fromTime"], "%Y-%m-%dT%H:%M:%S")
+    toTime = request.data["toTime"]
+    barcode = request.data["barcode"]
 
     supply_q = Q(barcode=barcode) & Q(supplyTime__lte=toTime)
 
-    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supplyTime').order_by('supplyTime')
-    
+    supply = Supply.objects.filter(supply_q).values(
+        "quantity", "price", "supplyTime").order_by("supplyTime")
 
     sale_q = Q(barcode=barcode) & Q(saleTime__lte=toTime)
-    
-    sale = Sale.objects.filter(sale_q).values('quantity', 'price', 'saleTime').order_by('saleTime')
-    sum_margin = 0
+
+    sale = Sale.objects.filter(sale_q).values("quantity", "price", "saleTime").order_by("saleTime")
+
+    # sale = Sale.objects.filter(barcode=barcode, saleTime__lte=toTime).values(
+    #     "quantity", "saleTime").order_by("saleTime")
+
+    # sale = Sale.objects.filter(
+    # barcode=barcode, saleTime__lte=toTime
+    # ).aggregate(total=Sum("quantity"))["total"]
+
+    # revenue = Sale.objects.filter(
+    #     barcode=barcode, saleTime__range=(fromTime, toTime)
+    # ).aggregate(total=Sum(F("quantity") * F("price")))["total"]
+    # i = 0
+    # quantity = 0
+    # netProfit = revenue
+    # for s in sale:
+    #     quantity += s["quantity"]
+    #     while s["quantity"] > 0:
+    #         if s["quantity"] >= supply[i]["quantity"]:
+    #             s["quantity"] -= supply[i]["quantity"]
+                
+    #             if s["saleTime"] >= fromTime:
+    #                 netProfit -= supply[i]["quantity"] * supply[i]["price"]
+    #             i += 1
+    #         else:
+    #             supply[i]["quantity"] -= s["quantity"]
+    #             if s["saleTime"] >= fromTime:
+    #                 netProfit -= s["quantity"] * supply[i]["price"]
+    #             break
+
+    netProfit = 0
     quantity = 0
     revenue = 0
     i = 0
     for s in sale:
-        if s['saleTime'] <= fromTime:
-            sum_margin = 0
+        if s["saleTime"] <= fromTime:
+            netProfit = 0
             quantity = 0
             revenue = 0
-        if s['saleTime'] >= fromTime:
-            quantity += s['quantity']
-            revenue += s['quantity'] * s['price']
-        while i < len(supply) and s['quantity'] > 0 and s['saleTime'] >= supply[i]['supplyTime']:
-            if s['quantity'] >= supply[i]['quantity']:
-                sum_margin += supply[i]['quantity'] * (s['price'] - supply[i]['price'])
+        if s["saleTime"] >= fromTime:
+            quantity += s["quantity"]
+            revenue += s["quantity"] * s["price"]
+        while i < len(supply) and s["quantity"] > 0 and s["saleTime"] >= supply[i]["supplyTime"]:
+            if s["quantity"] >= supply[i]["quantity"]:
+                netProfit += supply[i]["quantity"] * (s["price"] - supply[i]["price"])
             else:
 
-                sum_margin += s['quantity'] * (s['price'] - supply[i]['price'])
-                supply[i]['quantity'] -= s['quantity']
+                netProfit += s["quantity"] * (s["price"] - supply[i]["price"])
+                supply[i]["quantity"] -= s["quantity"]
                 break
 
-            s['quantity'] -= supply[i]['quantity']
+            s["quantity"] -= supply[i]["quantity"]
             i += 1
 
-        if (i >= 3 or s['saleTime'] < supply[i]['supplyTime']):
-            sum_margin += s['quantity'] * s['price']
+        if (i >= 3 or s["saleTime"] < supply[i]["supplyTime"]):
+            netProfit += s["quantity"] * s["price"]
 
     finalTime = time.time() - startTime
 
     return Response({"barcode": barcode,
                      "quantity": quantity,
                      "revenue": revenue,
-                     "netProfit": sum_margin, 
+                     "netProfit": netProfit,
                      "time": finalTime})
