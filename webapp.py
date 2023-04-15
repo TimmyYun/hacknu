@@ -93,21 +93,29 @@ if option1 == 'Supply':
                 
     elif option2 == 'PUT':
         id = st.text_input("ID", "1")
-        barcode = st.text_input("BARCODE", "")
-        price = st.text_input("PRICE", "")
-        quantity = st.text_input("QUANTITY", "")
-        supplyTime=st.text_input("SUPPLY TIME", "yyyy-MM-dd HH:mm:ss")
+        barcode = st.text_input("BARCODE", "123123")
+        price = st.text_input("PRICE", "1")
+        quantity = st.text_input("QUANTITY", "1")
+        col1, col2 = st.columns(2)
+        to_date = col1.date_input("Enter end date and time",
+                                  value=default_enddate, key=1)
+        to_time = col2.time_input(
+            "Select a time:", default_time, step=300, key=2)
+        supplyTime = datetime.combine(to_date, to_time)
+
+
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/supplies/{}".format(id)
+            api_url = "http://127.0.0.1:8000/api/supplies/{}/".format(id)
             todo = {
+                    "id": id,
                     "barcode": barcode,
                     "price": price,
                     "quantity":quantity,
-                    "supplyTime": supplyTime
+                    "supplyTime": supplyTime.isoformat()
                     }
-            response = requests.post(api_url, json=todo)
-            if response.status_codes == 200:
+            response = requests.put(api_url, json=todo)
+            if response.status_code == 200:
                 st.markdown("DONE")
             else:
                 st.markdown("ERROR. TRY AGAIN")
@@ -115,12 +123,10 @@ if option1 == 'Supply':
         id = st.text_input("ID", "1")
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/supplies/{}".format(id)
-            todo = {
-                    }
-            response = requests.post(api_url, json=todo)
+            api_url = "http://127.0.0.1:8000/api/supplies/{}/".format(id)
+            response = requests.delete(api_url)
             
-            if response.status_codes == 200:
+            if response.status_code == 200:
                 st.markdown("DONE")
             else:
                 st.markdown("ERROR. TRY AGAIN")
@@ -128,40 +134,45 @@ if option1 == 'Supply':
         id = st.text_input("ID", "1")
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/supplies/{}".format(id)
+            api_url = "http://127.0.0.1:8000/api/supplies/{}/".format(id)
             todo = {
                     }
             response = requests.get(api_url)
-            data = response.json()
-            if data:
+            try:
+                data = response.json()
                 st.table(data)
-            else:
-                st.markdown("No mtching data found.")
+            except:
+                st.markdown("No matching data found.")
+
 elif option1 == 'Sales':
     st.markdown("""---""")
     st.markdown(
-        'Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы продаж.')
+        'Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы закупок.')
     st.markdown("""---""")
     option2 = st.selectbox('METHOD', ('GET BY BARCODE','GET BY ID', 'POST', 'PUT', 'DELETE'))
     if option2 == 'GET BY BARCODE':
         barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
 
-        default_startdate_str = "2022/01/01"
-        default_startdate = datetime.strptime(
-            default_startdate_str, '%Y/%m/%d')
-        from_date = st.date_input(
-            "Enter a date and time", value=default_startdate, key=1)
-        
-        default_enddate_str = "2022/12/31"
-        default_enddate = datetime.strptime(default_enddate_str, '%Y/%m/%d')
-        to_date = st.date_input("Enter a date and time",
-                                value=default_enddate, key=2)
-        
+        col1, col2 = st.columns(2)
+        from_date = col1.date_input(
+            "Enter start date and time", value=default_startdate, key=1)
+        from_time = col2.time_input(
+            "Select a time:", default_time, step=300, key=2)
+        start_datetime = datetime.combine(from_date, from_time)
+
+        col3, col4 = st.columns(2)
+
+        to_date = col3.date_input("Enter end date and time",
+                                  value=default_enddate, key=3)
+        to_time = col4.time_input(
+            "Select a time:", default_time, step=300, key=4)
+        to_datetime = datetime.combine(to_date, to_time)
+
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/sales/"
-            todo = {"fromTime": from_date.isoformat(),
-                    "toTime": to_date.isoformat(), 
+            todo = {"fromTime": start_datetime.isoformat(),
+                    "toTime": to_datetime.isoformat(),
                     "barcode": barcode}
 
             response = requests.get(api_url, json=todo)
@@ -174,37 +185,56 @@ elif option1 == 'Sales':
 
     elif option2 == 'POST':
         barcode = st.text_input("BARCODE", "1010101010")
-        price =st.text_input("PRICE", "0")
+        price = st.text_input("PRICE", "0")
         quantity = st.text_input("QUANTITY", "0")
-        supplytime = st.text_input("SUPPLY TIME", "yyyy-MM-dd HH:mm:ss")
+
+        col1, col2 = st.columns(2)
+        to_date = col1.date_input("Enter end date and time",
+                                  value=default_enddate, key=1)
+        to_time = col2.time_input(
+            "Select a time:", default_time, step=300, key=2)
+        supplytime = datetime.combine(to_date, to_time)
+
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/sales/"
             todo = {"barcode": barcode,
-                    "price": price, "quantity": quantity, "supplyTime": supplytime}
+                    "price": price, 
+                    "quantity": quantity, 
+                    "saleTime": supplytime.isoformat()}
             response = requests.post(api_url, json=todo)
-            data = response.json().update(todo)
+            data = response.json()
             if data:
                 st.table(data)
             else:
-                st.write("Error occured. Try again. Possibly incorrect input form.")
+                st.write(
+                    "Error occured. Try again. Possibly incorrect input form.")
+                
     elif option2 == 'PUT':
         id = st.text_input("ID", "1")
-        barcode = st.text_input("BARCODE", "")
-        price = st.text_input("PRICE", "")
-        quantity = st.text_input("QUANTITY", "")
-        supplyTime=st.text_input("SUPPLY TIME", "yyyy-MM-dd HH:mm:ss")
+        barcode = st.text_input("BARCODE", "123123")
+        price = st.text_input("PRICE", "1")
+        quantity = st.text_input("QUANTITY", "1")
+        col1, col2 = st.columns(2)
+        to_date = col1.date_input("Enter end date and time",
+                                  value=default_enddate, key=1)
+        to_time = col2.time_input(
+            "Select a time:", default_time, step=300, key=2)
+        supplyTime = datetime.combine(to_date, to_time)
+
+
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/sales/{}".format(id)
+            api_url = "http://127.0.0.1:8000/api/sales/{}/".format(id)
             todo = {
+                    "id": id,
                     "barcode": barcode,
                     "price": price,
                     "quantity":quantity,
-                    "supplyTime": supplyTime
+                    "saleTime": supplyTime.isoformat()
                     }
-            response = requests.post(api_url, json=todo)
-            if response.status_codes == 200:
+            response = requests.put(api_url, json=todo)
+            if response.status_code == 200:
                 st.markdown("DONE")
             else:
                 st.markdown("ERROR. TRY AGAIN")
@@ -212,12 +242,10 @@ elif option1 == 'Sales':
         id = st.text_input("ID", "1")
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/sales/{}".format(id)
-            todo = {
-                    }
-            response = requests.post(api_url, json=todo)
+            api_url = "http://127.0.0.1:8000/api/sales/{}/".format(id)
+            response = requests.delete(api_url)
             
-            if response.status_codes == 200:
+            if response.status_code == 200:
                 st.markdown("DONE")
             else:
                 st.markdown("ERROR. TRY AGAIN")
@@ -225,15 +253,16 @@ elif option1 == 'Sales':
         id = st.text_input("ID", "1")
         submitted = st.button("Submit")
         if submitted:
-            api_url = "http://127.0.0.1:8000/api/sales/{}".format(id)
+            api_url = "http://127.0.0.1:8000/api/sales/{}/".format(id)
             todo = {
                     }
             response = requests.get(api_url)
-            data = response.json()
-            if data:
+            try:
+                data = response.json()
                 st.table(data)
-            else:
-                st.markdown("No mtching data found.")
+            except:
+                st.markdown("No matching data found.")
+
 elif option1 == 'Reports':
     st.markdown("""---""")
     st.markdown(
@@ -241,31 +270,24 @@ elif option1 == 'Reports':
     st.markdown("""---""")
     barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
 
-    default_startdate_str = "2022/01/01"
-    default_startdate = datetime.strptime(
-        default_startdate_str, '%Y/%m/%d')
     col1, col2 = st.columns(2)
-    default_time = time(12, 0)
-    from_date = col1.date_input(
+    start_date = col1.date_input(
         "Enter start date and time", value=default_startdate, key=5)
     start_time = col2.time_input(
         "Select a time:", default_time, step=300, key=6)
-
-    default_enddate_str = "2022/12/31"
-    default_enddate = datetime.strptime(
-        default_enddate_str, '%Y/%m/%d %H:%M:%S')
+    startTime = datetime.combine(start_date, start_time)
 
     col3, col4 = st.columns(2)
-
-    to_date = col3.date_input("Enter end date and time",
+    end_date = col3.date_input("Enter end date and time",
                               value=default_enddate, key=7)
     end_time = col4.time_input("Select a time:", default_time, step=300, key=8)
+    endTime = datetime.combine(end_date, end_time)
 
     submitted = st.button("Submit")
     if submitted:
         api_url = "http://127.0.0.1:8000/api/report/"
-        todo = {"fromTime": from_date.isoformat(),
-                "toTime": to_date.isoformat(),
+        todo = {"fromTime": startTime.isoformat(),
+                "toTime": endTime.isoformat(),
                 "barcode": barcode}
 
         response = requests.get(api_url, json=todo)

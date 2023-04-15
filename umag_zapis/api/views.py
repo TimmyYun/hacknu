@@ -45,7 +45,7 @@ def getSupplies(request):
         data = request.data
         data['id'] = new_id
         serializer = SupplySerializer(data=data)
-
+        breakpoint()
         if serializer.is_valid():
             serializer.save()
             return Response({"id": new_id}, status=status.HTTP_201_CREATED)
@@ -138,10 +138,10 @@ def getReport(request):
 
     startTime = time.time()
 
-    fromTime = datetime.strptime(request.data['fromTime'], "%Y-%m-%d")
+    fromTime = datetime.strptime(request.data['fromTime'], "%Y-%m-%dT%H:%M:%S")
     toTime = request.data['toTime']
     barcode = request.data['barcode']
-    #Quantity price time
+
     supply_q = Q(barcode=barcode) & Q(supply_time__lte=toTime)
 
     supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supply_time').order_by('supply_time')
@@ -150,13 +150,18 @@ def getReport(request):
     sale_q = Q(barcode=barcode) & Q(sale_time__lte=toTime)
     
     sale = Sale.objects.filter(sale_q).values('quantity', 'price', 'sale_time').order_by('sale_time')
-
-    i = 0
     sum_margin = 0
+    quantity = 0
+    revenue = 0
+    i = 0
     for s in sale:
         if s['sale_time'] <= fromTime:
             sum_margin = 0
-
+            quantity = 0
+            revenue = 0
+        if s['sale_time'] >= fromTime:
+            quantity += s['quantity']
+            revenue += s['quantity'] * s['price']
         while i < len(supply) and s['quantity'] > 0 and s['sale_time'] >= supply[i]['supply_time']:
             if s['quantity'] >= supply[i]['quantity']:
                 sum_margin += supply[i]['quantity'] * (s['price'] - supply[i]['price'])
@@ -174,5 +179,8 @@ def getReport(request):
 
     finalTime = time.time() - startTime
 
-    print("Total Margin =", sum_margin)
-    return Response({"magrin": sum_margin, "time": finalTime})
+    return Response({"barcode": barcode,
+                     "quantity": quantity,
+                     "revenue": revenue,
+                     "netProfit": sum_margin, 
+                     "time": finalTime})
