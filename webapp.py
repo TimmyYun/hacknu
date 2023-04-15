@@ -19,7 +19,7 @@ st.markdown('Для начала работы, выберите таблицу. 
 st.markdown("""---""")
 
 option1 = st.selectbox('TABLE', ('Supply', 'Sales', 'Reports'))
-default_time = time(12, 0)
+default_time = time(0, 0)
 default_startdate_str = "2022/01/01"
 default_startdate = datetime.strptime(default_startdate_str, '%Y/%m/%d')
 default_enddate_str = "2022/12/31"
