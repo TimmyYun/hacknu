@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django.db.models import Q
-
+from datetime import datetime
 
 @api_view(["GET"])
 def getRoutes(request):
@@ -134,37 +134,38 @@ def getSale(request, pk):
 
 @api_view(['GET', 'POST'])
 def getReport(request):
-    fromTime = request.data['fromTime']
+    fromTime = datetime.strptime(request.data['fromTime'], "%Y-%m-%d")
     toTime = request.data['toTime']
     barcode = request.data['barcode']
     #Quantity price time
     supply_q = Q(barcode=barcode) & Q(supply_time__lte=toTime)
 
-    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supply_time')
-    breakpoint()
+    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supply_time').order_by('supply_time')
     
-    sale = [
-        Triple(15, 30, 4),
-        Triple(25, 40, 5),
-        Triple(30, 40, 9)
-    ]
 
+    sale_q = Q(barcode=barcode) & Q(sale_time__lte=toTime)
+    
+    sale = Sale.objects.filter(sale_q).values('quantity', 'price', 'sale_time').order_by('sale_time')
+    # breakpoint()
     i = 0
     sum_margin = 0
 
     for s in sale:
-        while i < 3 and s.q > 0 and s.t >= supply[i].t:
-            if s.q >= supply[i].q:
-                sum_margin += supply[i].q * (s.p - supply[i].p)
+        if s['sale_time'] <= fromTime:
+            sum_margin = 0
+        while i < len(supply) and s['quantity'] > 0 and s['sale_time'] >= supply[i]['supply_time']:
+            if s['quantity'] >= supply[i]['quantity']:
+                sum_margin += supply[i]['quantity'] * (s['price'] - supply[i]['price'])
             else:
-                sum_margin += s.q * (s.p - supply[i].p)
-                supply[i].q -= s.q
+                sum_margin += s['quantity'] * (s['price'] - supply[i]['price'])
+                supply[i]['quantity'] -= s['quantity']
                 break
 
-            s.q -= supply[i].q
+            s['quantity'] -= supply[i]['quantity']
             i += 1
 
-        if i >= 3 or s.t < supply[i].t:
-            sum_margin += s.q * s.p
+        if i >= 3 or s['sale_time'] < supply[i]['supply_time']:
+            sum_margin += s['quantity'] * s['price']
 
     print("Total Margin =", sum_margin)
+    return Response({"magrin": sum_margin})

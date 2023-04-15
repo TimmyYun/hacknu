@@ -91,6 +91,33 @@ elif option1 == 'Reports':
     st.markdown(
         'Здесь вы можете получить репорт о прибыли за период с учетом себестоимости.')
     st.markdown("""---""")
+    barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
+
+    default_startdate_str = "2022/01/01"
+    default_startdate = datetime.strptime(
+        default_startdate_str, '%Y/%m/%d')
+    from_date = st.date_input(
+        "Enter a date and time", value=default_startdate, key=1)
+    
+    default_enddate_str = "2022/12/31"
+    default_enddate = datetime.strptime(default_enddate_str, '%Y/%m/%d')
+    to_date = st.date_input("Enter a date and time",
+                            value=default_enddate, key=2)
+    
+    submitted = st.button("Submit")
+    if submitted:
+        api_url = "http://127.0.0.1:8000/api/report/"
+        todo = {"fromTime": from_date.isoformat(),
+                "toTime": to_date.isoformat(), 
+                "barcode": barcode}
+
+        response = requests.get(api_url, json=todo)
+        data = response.json()
+
+        if data:
+            st.table(data)
+        else:
+            st.write("No data found for the given parameters.")
 
 # Perform query.
 # Uses st.experimental_memo to only rerun when the query changes or after 10 min.
