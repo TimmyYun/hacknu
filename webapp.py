@@ -2,24 +2,16 @@ import streamlit as st
 import psycopg2
 import requests
 import pandas as pd
-# Initialize connection.
-# Uses st.experimental_singleton to only run once.
+from datetime import datetime
+
 
 def main():
     st.title("HACKNU umag & zapis.kz case")
     st.subheader(':cake: by tortiki_remastered')
+
+
 if __name__ == '__main__':
-    main() 
-
-@st.cache_resource
-def init_connection():
-    return psycopg2.connect(
-    host="localhost",
-    database="umag_hacknu",
-    user="postgres",
-    password="475704mayagol")
-
-conn = init_connection()
+    main()
 
 st.markdown("""---""")
 st.markdown('Для начала работы, выберите таблицу. Таблица sales работает с информацией о продажах. Таблица supplies работает с информацией о закупках. Таблица Report дает доступ к получению информации о продажах и закупках.')
@@ -28,32 +20,65 @@ st.markdown("""---""")
 option1 = st.selectbox('TABLE', ('Sales', 'Supply', 'Reports'))
 if option1 == 'Sales':
     st.markdown("""---""")
-    st.markdown('Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы продаж.')
+    st.markdown(
+        'Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы продаж.')
     st.markdown("""---""")
     option2 = st.selectbox('METHOD', ('GET', 'POST', 'PUT', 'DELETE'))
     if option2 == 'GET':
+        barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
+
+        default_startdate_str = "2022/01/01"
+        default_startdate = datetime.strptime(
+            default_startdate_str, '%Y/%m/%d')
+        from_date = st.date_input(
+            "Enter a date and time", value=default_startdate, key=1)
+        
+        default_enddate_str = "2022/12/31"
+        default_enddate = datetime.strptime(default_enddate_str, '%Y/%m/%d')
+        to_date = st.date_input("Enter a date and time",
+                                value=default_enddate, key=2)
+        
+        submitted = st.button("Submit")
+        if submitted:
+            api_url = "http://127.0.0.1:8000/api/supplies/"
+            todo = {"fromTime": from_date.isoformat(),
+                    "toTime": to_date.isoformat(), 
+                    "barcode": barcode}
+
+            response = requests.get(api_url, json=todo)
+            data = response.json()
+
+            if data:
+                st.table(data)
+            else:
+                st.write("No data found for the given parameters.")
+
+    elif option2 == 'POST':
         barcode = st.text_input("BARCODE", "yyyy-MM-dd HH:mm:ss")
         from_date = st.text_input("FROM TIME", "yyyy-MM-dd HH:mm:ss")
         to_date = st.text_input("TO_DATE", "yyyy-MM-dd HH:mm:ss")
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/supplies/"
-            todo = {"fromTime":from_date,"toTime":to_date, "barcode":barcode }
+            todo = {"fromTime": from_date,
+                    "toTime": to_date, "barcode": barcode}
             response = requests.post(api_url, json=todo)
             response.json()
 elif option1 == 'Supply':
     st.markdown("""---""")
-    st.markdown('Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы закупок.')
+    st.markdown(
+        'Здесь вы можете создавать, редактировать, удалять и просмотривать записи таблицы закупок.')
     st.markdown("""---""")
     option2 = st.selectbox('METHOD', ('GET', 'POST', 'PUT', 'DELETE'))
 elif option1 == 'Reports':
     st.markdown("""---""")
-    st.markdown('Здесь вы можете получить репорт о прибыли за период с учетом себестоимости.')
+    st.markdown(
+        'Здесь вы можете получить репорт о прибыли за период с учетом себестоимости.')
     st.markdown("""---""")
 
 # Perform query.
 # Uses st.experimental_memo to only rerun when the query changes or after 10 min.
-#@st.experimental_memo(ttl=600)
+# @st.experimental_memo(ttl=600)
 # def run_query(query): #for read
 #     with conn.cursor() as cur:
 #         cur.execute(query)
@@ -64,12 +89,12 @@ elif option1 == 'Reports':
 #             cur.execute(query)
 #         except:
 #             cur.execute("rollback")
-#             cur.execute(query)              
-    
+#             cur.execute(query)
+
 # def show_disease_types():
-#         try:  
+#         try:
 #             column1 = run_query("SELECT id FROM sales;")
-#             column2 = run_query("SELECT description FROM diseasetype;")    
+#             column2 = run_query("SELECT description FROM diseasetype;")
 #             st.write(pd.DataFrame({
 #                 'ID': column1,
 #                 'Description': column2,
@@ -239,37 +264,37 @@ elif option1 == 'Reports':
 
 # def create_diseases():
 #     new_val1 = st.text_input('Disease code')
-#     new_val2 = st.text_input('Pathogen')  
+#     new_val2 = st.text_input('Pathogen')
 #     new_val3 = st.text_input('Description of the disease')
 #     new_val4 = st.number_input('ID of the disease', step=1)
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "" and new_val4 != 0:
 #         try:
 #             run_query_c(f"INSERT INTO Disease VALUES ('{new_val1}', '{new_val2}', '{new_val3}', {new_val4});")
-#         except: 
+#         except:
 #             run_query_c("CREATE TABLE Disease(disease_code varchar(50) PRIMARY KEY,pathogen varchar(20) NOT NULL,description varchar(140) NOT NULL,id integer NOT NULL,FOREIGN KEY (id) References DiseaseType (id) ON DELETE CASCADE ON UPDATE CASCADE);")
 #             run_query_c(f"INSERT INTO Disease VALUES ('{new_val1}', '{new_val2}', '{new_val3}', {new_val4});")
 # def create_disease_types():
 #     new_val1 = st.number_input('ID of the disease', step=1)
-#     new_val2 = st.text_input('Description of the disease')  
+#     new_val2 = st.text_input('Description of the disease')
 #     if new_val1 != 0 and new_val2 != "":
 #         try:
 #             run_query_c(f"INSERT INTO Diseasetype VALUES ('{new_val1}', '{new_val2}');")
-            
-#         except: 
+
+#         except:
 #             run_query_c("CREATE TABLE Diseasetype(id integer PRIMARY KEY,description varchar(140) NOT NULL); ")
 #             run_query_c(f"INSERT INTO Diseasetype VALUES ('{new_val1}', '{new_val2}');")
-            
+
 # def create_country():
 #     new_val1 = st.text_input('Country')
 #     new_val2 = st.number_input('Population', step=1)
 #     if new_val1 != "" and new_val2 != 0:
 #         try:
 #             run_query_c(f"INSERT INTO Country VALUES ('{new_val1}', '{new_val2}');")
-           
-#         except: 
+
+#         except:
 #             run_query_c("CREATE TABLE Country(cname varchar(50) PRIMARY KEY,population bigint NOT NULL);")
 #             run_query_c(f"INSERT INTO Country VALUES ('{new_val1}', '{new_val2}');")
-            
+
 # def create_discover():
 #     new_val1 = st.text_input('Country')
 #     new_val2 = st.text_input('Disease code')
@@ -277,14 +302,14 @@ elif option1 == 'Reports':
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "":
 #         try:
 #             run_query_c(f"INSERT INTO Discover VALUES ('{new_val1}', '{new_val2}', '{new_val3}');")
-            
-#         except: 
+
+#         except:
 #             run_query_c("CREATE TABLE Discover(cname varchar(50) NOT NULL,disease_code varchar(50) NOT NULL,first_enc_date date NOT NULL, FOREIGN KEY (disease_code) References Disease (disease_code) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (cname) References Country (cname) ON DELETE CASCADE ON UPDATE CASCADE); ")
 #             run_query_c(f"INSERT INTO Discover VALUES ('{new_val1}', '{new_val2}', '{new_val3}');")
-            
+
 # def create_user():
 #     new_val1 = st.text_input('Email')
-#     new_val2 = st.text_input('Name')  
+#     new_val2 = st.text_input('Name')
 #     new_val3 = st.text_input('Surname')
 #     new_val4 = st.number_input('Salary', step=1)
 #     new_val5 = st.text_input('Phone number')
@@ -292,71 +317,71 @@ elif option1 == 'Reports':
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "" and new_val4 != 0 and new_val5 != "" and new_val6 != "":
 #         try:
 #             run_query_c(f"INSERT INTO Users VALUES ('{new_val1}', '{new_val2}', '{new_val3}', {new_val4}, '{new_val5}', '{new_val6}');")
-            
+
 #         except:
 #             run_query_c("CREATE TABLE Users(email varchar(60) PRIMARY KEY,name varchar(30) NOT NULL,surname varchar(40) NOT NULL,salary integer,phone varchar(20) NOT NULL,cname varchar(50) NOT NULL,FOREIGN KEY (cname) References Country (cname) ON DELETE CASCADE ON UPDATE CASCADE);")
 #             run_query_c(f"INSERT INTO Users VALUES ('{new_val1}', '{new_val2}', '{new_val3}', {new_val4}, '{new_val5}', '{new_val6}');")
-            
+
 # def create_public_servant():
 #     new_val1 = st.text_input('Email')
 #     new_val2 = st.text_input('Department')
 #     if new_val1 != "" and new_val2 != "":
 #         try:
 #             run_query_c(f"INSERT INTO PublicServant VALUES ({new_val1}, '{new_val2}');")
-            
+
 #         except:
 #             run_query_c("CREATE TABLE PublicServant(email varchar(60) UNIQUE, department varchar(50) NOT NULL,FOREIGN KEY (email) References Users (email) ON DELETE CASCADE ON UPDATE CASCADE);)")
 #             run_query_c(f"INSERT INTO PublicServant VALUES ({new_val1}, '{new_val2}');")
-            
+
 # def create_doctor():
 #     new_val1 = st.text_input('Email')
 #     new_val2 = st.text_input('Degree')
 #     if new_val1 != "" and new_val2 != "":
 #         try:
 #             run_query_c(f"INSERT INTO Doctor VALUES ('{new_val1}', '{new_val2}');")
-            
+
 #         except:
 #             run_query_c("CREATE TABLE Doctor(email varchar(60) UNIQUE,degree varchar(20) NOT NULL,FOREIGN KEY (email) References Users (email) ON DELETE CASCADE ON UPDATE CASCADE); )")
 #             run_query_c(f"INSERT INTO Doctor VALUES ('{new_val1}', '{new_val2}');")
-            
+
 # def create_specialize():
 #     new_val1 = st.number_input('ID', step=1)
 #     new_val2 = st.text_input('Email')
 #     if new_val1 != 0 and new_val2 != "":
 #         try:
 #             run_query_c(f"INSERT INTO Specialize VALUES ({new_val1}, '{new_val2}');")
-            
+
 #         except:
 #             run_query_c("CREATE TABLE Specialize(id integer NOT NULL,email varchar(60) NOT NULL,FOREIGN KEY (id) References DiseaseType (id) ON DELETE CASCADE ON UPDATE CASCADE,FOREIGN KEY (email) References Doctor (email) ON DELETE CASCADE ON UPDATE CASCADE);)")
 #             run_query_c(f"INSERT INTO Specialize VALUES ({new_val1}, '{new_val2}');")
-            
+
 # def create_record():
 #     new_val1 = st.text_input('Email')
-#     new_val2 = st.text_input('Country')  
-#     new_val3 = st.text_input('Disease code') 
+#     new_val2 = st.text_input('Country')
+#     new_val3 = st.text_input('Disease code')
 #     new_val4 = st.number_input('Total deaths')
 #     new_val5 = st.number_input('Total patients', step=1)
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "" and new_val4 != 0 and new_val5 != 0:
 #         try:
 #             run_query_c(f"INSERT INTO Record VALUES('{new_val1}', '{new_val2}', '{new_val3}', {new_val4}, {new_val5})")
-            
+
 #         except:
 #             run_query_c("CREATE TABLE Record(email varchar(60) NOT NULL,cname varchar(50) NOT NULL, disease_code varchar(50) NOT NULL,total_deaths integer NOT NULL,total_patients integer NOT NULL,FOREIGN KEY (disease_code) References Disease (disease_code) ON DELETE CASCADE ON UPDATE CASCADE,FOREIGN KEY (cname) References Country (cname) ON DELETE CASCADE ON UPDATE CASCADE,FOREIGN KEY (email) References PublicServant (email) ON DELETE CASCADE ON UPDATE CASCADE);)")
 #             run_query_c(f"INSERT INTO Record VALUES('{new_val1}', '{new_val2}', '{new_val3}', {new_val4}, {new_val5}")
-            
+
 
 # def update_disease_type():
 #     1
 # def update_disease():
 #     row = st.number_input("Choose the row by id", step=1)
 #     new_val1 = st.text_input('Disease code')
-#     new_val2 = st.text_input('Pathogen')  
+#     new_val2 = st.text_input('Pathogen')
 #     new_val3 = st.text_input('Description of the disease')
 #     new_val4 = st.number_input('ID of the disease', step=1)
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "" and new_val4 != 0:
 #         try:
 #             run_query_c(f"UPDATE Disease SET disease_code = '{new_val1}', pathogen = '{new_val2}', description = '{new_val3}', id = {new_val4} WHERE id = {row};")
-#         except: 
+#         except:
 #             st.write("Can't update this value")
 # def update_country():
 #     row = st.text_input("Choose the row by country")
@@ -365,7 +390,7 @@ elif option1 == 'Reports':
 #     if new_val1 != "" and new_val2 != 0:
 #         try:
 #             run_query_c(f"UPDATE Country SET cname='{new_val1}', population = '{new_val2}' WHERE cname = '{row}';")
-#         except: 
+#         except:
 #             st.write("Can't update this value")
 # def update_discovery():
 #     row = st.text_input("Choose the row by country")
@@ -375,13 +400,13 @@ elif option1 == 'Reports':
 #     if new_val1 != "" and new_val2 != "" and new_val3 != "":
 #         try:
 #             run_query_c(f"UPDATE Discover SET cname = '{new_val1}', disease_code =  '{new_val2}', first_enc_date = '{new_val3}' WHERE cname = '{row}';")
-#         except: 
+#         except:
 #             st.write("Can't update this value")
 # def update_user():
-    
+
 #     row = st.text_input("Choose the row by email")
 #     new_val1 = st.text_input('Email')
-#     new_val2 = st.text_input('Name')  
+#     new_val2 = st.text_input('Name')
 #     new_val3 = st.text_input('Surname')
 #     new_val4 = st.number_input('Salary', step=1)
 #     new_val5 = st.text_input('Phone number')
@@ -421,7 +446,7 @@ elif option1 == 'Reports':
 # def update_record():
 #     row = st.text_input("Choose the row by email")
 #     new_val1 = st.text_input('Email')
-#     new_val2 = st.text_input('Country')  
+#     new_val2 = st.text_input('Country')
 #     new_val3 = st.text_input("Disease code")
 #     new_val4 = st.number_input('Total deaths')
 #     new_val5 = st.number_input('Total patients', step=1)
@@ -432,24 +457,24 @@ elif option1 == 'Reports':
 #             st.write("Can't update this value")
 
 # def delete_disease_type():
-    
-#     run_query_c("DROP TABLE Diseasetype CASCADE;")  
+
+#     run_query_c("DROP TABLE Diseasetype CASCADE;")
 # def delete_disease():
-#     run_query_c("DROP TABLE Disease CASCADE;")  
+#     run_query_c("DROP TABLE Disease CASCADE;")
 # def delete_country():
-#     run_query_c("DROP TABLE Country CASCADE;")  
+#     run_query_c("DROP TABLE Country CASCADE;")
 # def delete_discover():
-#     run_query_c("DROP TABLE Discover CASCADE;")    
+#     run_query_c("DROP TABLE Discover CASCADE;")
 # def delete_users():
-#     run_query_c("DROP TABLE Users CASCADE;")  
+#     run_query_c("DROP TABLE Users CASCADE;")
 # def delete_public_servant():
-#     run_query_c("DROP TABLE Publicservant CASCADE;")  
+#     run_query_c("DROP TABLE Publicservant CASCADE;")
 # def delete_doctor():
-#     run_query_c("DROP TABLE Doctor CASCADE;") 
+#     run_query_c("DROP TABLE Doctor CASCADE;")
 # def delete_specialize():
-#     run_query_c("DROP TABLE Specialize CASCADE;") 
+#     run_query_c("DROP TABLE Specialize CASCADE;")
 # def delete_record():
-#     run_query_c("DROP TABLE Record CASCADE;")   
+#     run_query_c("DROP TABLE Record CASCADE;")
 # option = st.selectbox('Choose an option', ('CREATE', 'READ', 'UPDATE', 'DELETE'))
 
 # if option == 'CREATE':
@@ -499,20 +524,20 @@ elif option1 == 'Reports':
 #             show_specialize()
 
 # elif(option == 'UPDATE'):
-#     option2 = st.selectbox('Choose which table to update', ('Disease Types', 'Diseases', 'Countries', 'Discoveries', 'Users', 'Public Servants', 'Doctor', 'Specialize', 'Record'))        
+#     option2 = st.selectbox('Choose which table to update', ('Disease Types', 'Diseases', 'Countries', 'Discoveries', 'Users', 'Public Servants', 'Doctor', 'Specialize', 'Record'))
 #     if option2 == "Disease Types":
 #         show_disease_types()
 #         row = st.number_input("Choose the row by id", step=1)
 #         new_val1 = st.number_input('ID of the disease', step=1)
-#         new_val2 = st.text_input('Description of the disease')  
+#         new_val2 = st.text_input('Description of the disease')
 #         if new_val1 != 0 and new_val2 != "" and st.button("UPDATE"):
 #             try:
 #                 run_query_c(f"UPDATE Diseasetype SET id = {new_val1}, description = '{new_val2}' WHERE id = {row};")
-#             except: 
+#             except:
 #                 st.write("Can't update this value")
 #         show_disease_types()
 #         st.experimental_rerun()
-#     elif option2 == "Diseases":   
+#     elif option2 == "Diseases":
 #         update_disease()
 #         show_diseases()
 #         st.experimental_rerun()
@@ -525,11 +550,11 @@ elif option1 == 'Reports':
 #         show_discoveries()
 #         st.experimental_rerun()
 #     elif option2 == "Users":
-#         update_user()  
+#         update_user()
 #         show_users()
 #         st.experimental_rerun()
 #     elif option2 == "Public Servants":
-#         update_public_servant() 
+#         update_public_servant()
 #         show_public_servants()
 #         st.experimental_rerun()
 #     elif option2 == "Doctor":
@@ -537,21 +562,21 @@ elif option1 == 'Reports':
 #         show_doctors()
 #         st.experimental_rerun()
 #     elif option2 == "Specialize":
-#         update_specialize() 
+#         update_specialize()
 #         show_specialize()
 #         st.experimental_rerun()
 #     elif option2 == "Record":
 #         update_record()
 #         show_records()
 #         st.experimental_rerun()
-    
-# elif(option=="DELETE"): #delete 
-#     option2 = st.selectbox('Choose a table', ('Disease Types', 'Diseases', 'Countries', 'Discoveries', 'Users', 'Public Servants', 'Doctor', 'Specialize', 'Record'))        
+
+# elif(option=="DELETE"): #delete
+#     option2 = st.selectbox('Choose a table', ('Disease Types', 'Diseases', 'Countries', 'Discoveries', 'Users', 'Public Servants', 'Doctor', 'Specialize', 'Record'))
 #     if option2 == "Disease Types":
 #         row = st.number_input("Choose the row by id", step=1)
 #         try:
 #             run_query_c(f"DELETE FROM Diseasetype where id = {row}")
-#         except: 
+#         except:
 #             st.write("Can't delete this row")
 #         show_disease_types()
 #         if st.button("Delete this table"):
@@ -559,40 +584,40 @@ elif option1 == 'Reports':
 #             st.experimental_rerun()
 #     elif option2 == "Diseases":
 #         if st.button("Delete this table"):
-#             delete_disease()    
+#             delete_disease()
 #         show_diseases()
 #     elif option2 == "Countries":
 #         if st.button("Delete this table"):
 #             delete_country()
-#             st.experimental_rerun()   
+#             st.experimental_rerun()
 #         show_countries()
 #     elif option2 == 'Discoveries':
 #         if st.button("Delete this table"):
-#             delete_discover()   
-#             st.experimental_rerun()   
+#             delete_discover()
+#             st.experimental_rerun()
 #         show_discoveries()
 #     elif option2 == "Users":
 #         if st.button("Delete this table"):
-#             delete_users()     
-#             st.experimental_rerun()   
+#             delete_users()
+#             st.experimental_rerun()
 #         show_users()
 #     elif option2 == "Public Servants":
 #         if st.button("Delete this table"):
-#             delete_public_servant()   
-#             st.experimental_rerun()   
+#             delete_public_servant()
+#             st.experimental_rerun()
 #         show_public_servants()
 #     elif option2 == "Doctor":
 #         if st.button("Delete this table"):
-#             delete_doctor()   
-#             st.experimental_rerun()   
+#             delete_doctor()
+#             st.experimental_rerun()
 #         show_doctors()
 #     elif option2 == "Specialize":
 #         if st.button("Delete this table"):
-#             delete_specialize()   
-#             st.experimental_rerun()   
+#             delete_specialize()
+#             st.experimental_rerun()
 #         show_specialize()
 #     elif option2 == "Record":
 #         if st.button("Delete this table"):
-#             delete_record()   
-#             st.experimental_rerun()   
+#             delete_record()
+#             st.experimental_rerun()
 #         show_records()
