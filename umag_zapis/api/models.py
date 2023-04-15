@@ -4,10 +4,10 @@ from django.db import models
 
 class Sale(models.Model):
     id = models.BigIntegerField(primary_key=True, blank=True)
-    barcode = models.BigIntegerField()
-    quantity = models.IntegerField(default=1)
-    price = models.IntegerField(default=0)
-    sale_time = models.DateTimeField(auto_now_add=True)
+    barcode = models.BigIntegerField(blank=True)
+    quantity = models.IntegerField(default=1, blank=True)
+    price = models.IntegerField(default=0, blank=True)
+    sale_time = models.DateTimeField(auto_now_add=True, blank=True)
     
     class Meta:
         indexes = [

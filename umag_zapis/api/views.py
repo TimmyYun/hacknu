@@ -3,6 +3,7 @@ from api.serializers import *
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 
 
 @api_view(["GET"])
@@ -23,7 +24,13 @@ def getSupplies(request):
     List all supplies, or create a new supply.
     """
     if request.method == "GET":
-        supply = Supply.objects.all()
+        barcode = request.data['barcode']
+        from_time = request.data['fromTime']
+        to_time = request.data['toTime']
+
+        supply_filter = Q(barcode=barcode) & Q(supply_time__gte=from_time) & Q(supply_time__lte=to_time)
+
+        supply = Supply.objects.filter(supply_filter)
         serializer = SupplySerializer(supply, many=True)
         return Response(serializer.data)
 
@@ -130,5 +137,34 @@ def getReport(request):
     fromTime = request.data['fromTime']
     toTime = request.data['toTime']
     barcode = request.data['barcode']
+    #Quantity price time
+    supply_q = Q(barcode=barcode) & Q(supply_time__lte=toTime)
 
+    supply = Supply.objects.filter(supply_q).values('quantity', 'price', 'supply_time')
+    breakpoint()
     
+    sale = [
+        Triple(15, 30, 4),
+        Triple(25, 40, 5),
+        Triple(30, 40, 9)
+    ]
+
+    i = 0
+    sum_margin = 0
+
+    for s in sale:
+        while i < 3 and s.q > 0 and s.t >= supply[i].t:
+            if s.q >= supply[i].q:
+                sum_margin += supply[i].q * (s.p - supply[i].p)
+            else:
+                sum_margin += s.q * (s.p - supply[i].p)
+                supply[i].q -= s.q
+                break
+
+            s.q -= supply[i].q
+            i += 1
+
+        if i >= 3 or s.t < supply[i].t:
+            sum_margin += s.q * s.p
+
+    print("Total Margin =", sum_margin)
