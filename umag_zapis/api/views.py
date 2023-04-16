@@ -207,10 +207,8 @@ def getReport(request):
         if (i >= 3 or s["saleTime"] < supply[i]["supplyTime"]):
             netProfit += s["quantity"] * s["price"]
 
-    finalTime = time.time() - startTime
 
     return Response({"barcode": barcode,
                      "quantity": quantity,
                      "revenue": revenue,
-                     "netProfit": netProfit,
-                     "time": finalTime})
+                     "netProfit": netProfit})
