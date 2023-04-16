@@ -166,37 +166,20 @@ def getReport(request):
     revenue = Sale.objects.filter(
         barcode=barcode, saleTime__range=(fromTime, toTime)
     ).aggregate(total=Sum(F("quantity") * F("price")))["total"]
-    # i = 0
-    # quantity = 0
-    # netProfit = revenue
-    # for s in sale:
-    #     quantity += s["quantity"]
-    #     while s["quantity"] > 0:
-    #         if s["quantity"] >= supply[i]["quantity"]:
-    #             s["quantity"] -= supply[i]["quantity"]
-                
-    #             if s["saleTime"] >= fromTime:
-    #                 netProfit -= supply[i]["quantity"] * supply[i]["price"]
-    #             i += 1
-    #         else:
-    #             supply[i]["quantity"] -= s["quantity"]
-    #             if s["saleTime"] >= fromTime:
-    #                 netProfit -= s["quantity"] * supply[i]["price"]
-    #             break
-
-    netProfit = 0
     i = 0
+    netProfit = revenue
     for s in sale:
-        if s["saleTime"] <= fromTime:
-            netProfit = 0
         while s["quantity"] > 0:
             if s["quantity"] >= supply[i]["quantity"]:
-                netProfit += supply[i]["quantity"] * (s["price"] - supply[i]["price"])
-                i += 1
                 s["quantity"] -= supply[i]["quantity"]
+                
+                if s["saleTime"] >= fromTime:
+                    netProfit -= supply[i]["quantity"] * supply[i]["price"]
+                i += 1
             else:
-                netProfit += s["quantity"] * (s["price"] - supply[i]["price"])
                 supply[i]["quantity"] -= s["quantity"]
+                if s["saleTime"] >= fromTime:
+                    netProfit -= s["quantity"] * supply[i]["price"]
                 break
 
     return Response({"barcode": barcode,
