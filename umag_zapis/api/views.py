@@ -76,6 +76,8 @@ def getSupply(request, pk):
         supply.delete()
         return Response(status=status.HTTP_200_OK)
 
+# Sale
+
 
 @api_view(["GET", "POST"])
 def getSales(request):
@@ -129,6 +131,8 @@ def getSale(request, pk):
     if request.method == "DELETE":
         sale.delete()
         return Response(status=status.HTTP_200_OK)
+
+# Report
 
 
 @api_view(["GET", "POST"])
