@@ -1,0 +1,8 @@
+INSERT INTO sale (id, barcode, quantity, price, saleTime)
+VALUES (
+    'id:bigint',
+    'barcode:bigint',
+    quantity:integer,
+    price:integer,
+    'saleTime:timestamp'
+  );

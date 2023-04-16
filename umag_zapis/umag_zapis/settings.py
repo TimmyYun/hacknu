@@ -78,7 +78,7 @@ WSGI_APPLICATION = "umag_zapis.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "hacknu",
+        "NAME": "Umag",
         "USER": "postgres",
         "PASSWORD": "adminadmin",
         "HOST": "localhost",
