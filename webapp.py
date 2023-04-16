@@ -38,7 +38,7 @@ if option1 == 'Supply':
             "Enter start date and time", value=default_startdate, key=1)
         from_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
-        start_datetime = datetime.combine(from_date, from_time)
+        from_datetime = datetime.combine(from_date, from_time)
 
         col3, col4 = st.columns(2)
 
@@ -51,7 +51,7 @@ if option1 == 'Supply':
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/supplies/"
-            todo = {"fromTime": start_datetime.isoformat(),
+            todo = {"fromTime": from_datetime.isoformat(),
                     "toTime": to_datetime.isoformat(),
                     "barcode": barcode}
 
@@ -157,7 +157,7 @@ elif option1 == 'Sales':
             "Enter start date and time", value=default_startdate, key=1)
         from_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
-        start_datetime = datetime.combine(from_date, from_time)
+        from_datetime = datetime.combine(from_date, from_time)
 
         col3, col4 = st.columns(2)
 
@@ -170,7 +170,7 @@ elif option1 == 'Sales':
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/sales/"
-            todo = {"fromTime": start_datetime.isoformat(),
+            todo = {"fromTime": from_datetime.isoformat(),
                     "toTime": to_datetime.isoformat(),
                     "barcode": barcode}
 
@@ -219,7 +219,7 @@ elif option1 == 'Sales':
                                   value=default_enddate, key=1)
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
-        supplyTime = datetime.combine(to_date, to_time)
+        saleTime = datetime.combine(to_date, to_time)
 
 
         submitted = st.button("Submit")
@@ -230,7 +230,7 @@ elif option1 == 'Sales':
                     "barcode": barcode,
                     "price": price,
                     "quantity":quantity,
-                    "saleTime": supplyTime.isoformat()
+                    "saleTime": saleTime.isoformat()
                     }
             response = requests.put(api_url, json=todo)
             if response.status_code == 200:
@@ -270,23 +270,23 @@ elif option1 == 'Reports':
     barcode = st.text_input("BARCODE", "4870204391510", max_chars=13)
 
     col1, col2 = st.columns(2)
-    start_date = col1.date_input(
+    from_date = col1.date_input(
         "Enter start date and time", value=default_startdate, key=5)
-    start_time = col2.time_input(
+    from_time = col2.time_input(
         "Select a time:", default_time, step=300, key=6)
-    startTime = datetime.combine(start_date, start_time)
+    fromTime = datetime.combine(from_date, from_time)
 
     col3, col4 = st.columns(2)
-    end_date = col3.date_input("Enter end date and time",
+    to_date = col3.date_input("Enter end date and time",
                               value=default_enddate, key=7)
-    end_time = col4.time_input("Select a time:", default_time, step=300, key=8)
-    endTime = datetime.combine(end_date, end_time)
+    to_time = col4.time_input("Select a time:", default_time, step=300, key=8)
+    toTime = datetime.combine(to_date, to_time)
 
     submitted = st.button("Submit")
     if submitted:
         api_url = "http://127.0.0.1:8000/api/report/"
-        todo = {"fromTime": startTime.isoformat(),
-                "toTime": endTime.isoformat(),
+        todo = {"fromTime": fromTime.isoformat(),
+                "toTime": toTime.isoformat(),
                 "barcode": barcode}
 
         response = requests.get(api_url, json=todo)
