@@ -138,7 +138,7 @@ def getSale(request, pk):
 @api_view(["GET", "POST"])
 def getReport(request):
 
-    fromTime = datetime.strptime(request.data["fromTime"], "%Y-%m-%dT%H:%M:%S")
+    fromTime = datetime.strptime(request.data["fromTime"], "%Y-%m-%d %H:%M:%S")
     toTime = request.data["toTime"]
     barcode = request.data["barcode"]
 

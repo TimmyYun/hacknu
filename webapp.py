@@ -1,15 +1,11 @@
 import streamlit as st
-import psycopg2
 import requests
-import pandas as pd
 from datetime import datetime
 from datetime import time
-
 
 def main():
     st.title("HACKNU umag & zapis.kz case")
     st.subheader(':cake: by tortiki_remastered')
-
 
 if __name__ == '__main__':
     main()
