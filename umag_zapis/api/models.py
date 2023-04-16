@@ -1,6 +1,10 @@
 from django.db import models
 from django.db.models import DateTimeField
 
+class DateTimeWithoutTZField(DateTimeField):
+    def db_type(self, connection):
+        return 'timestamp'
+
 # Create your models here.
 
 class Sale(models.Model):
@@ -8,7 +12,7 @@ class Sale(models.Model):
     barcode = models.BigIntegerField(blank=True)
     quantity = models.IntegerField(default=1, blank=True)
     price = models.IntegerField(default=0, blank=True)
-    saleTime = DateTimeField(auto_now_add=True, blank=True)
+    saleTime = DateTimeWithoutTZField(auto_now_add=True, blank=True)
     
     class Meta:
         indexes = [
@@ -22,7 +26,7 @@ class Supply(models.Model):
     barcode = models.BigIntegerField()
     quantity = models.IntegerField(default=1)
     price = models.IntegerField(default=0)
-    supplyTime = DateTimeField(auto_now_add=True)
+    supplyTime = DateTimeWithoutTZField(auto_now_add=True)
     
     class Meta:
         indexes = [

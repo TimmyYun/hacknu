@@ -35,8 +35,7 @@ if option1 == 'Supply':
         from_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         from_datetime = datetime.combine(from_date, from_time)
-        from_datetime.microsecond = 0
-        from_datetime.tzinfo = None
+        from_datetime.replace(tzinfo=None, microsecond=0)
 
         col3, col4 = st.columns(2)
 
@@ -45,8 +44,7 @@ if option1 == 'Supply':
         to_time = col4.time_input(
             "Select a time:", default_time, step=300, key=4)
         to_datetime = datetime.combine(to_date, to_time)
-        to_datetime.microsecond = 0
-        to_datetime.tzinfo = None
+        to_datetime.replace(tzinfo=None, microsecond=0)
 
         submitted = st.button("Submit")
         if submitted:
@@ -74,8 +72,7 @@ if option1 == 'Supply':
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         supplytime = datetime.combine(to_date, to_time)
-        supplytime.microsecond = 0
-        supplytime.tzinfo = None
+        supplytime.replace(tzinfo=None, microsecond=0)
 
         submitted = st.button("Submit")
         if submitted:
@@ -103,6 +100,7 @@ if option1 == 'Supply':
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         supplyTime = datetime.combine(to_date, to_time)
+        supplyTime.replace(tzinfo=None, microsecond=0)
 
 
         submitted = st.button("Submit")
@@ -160,6 +158,7 @@ elif option1 == 'Sales':
         from_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         from_datetime = datetime.combine(from_date, from_time)
+        from_datetime.replace(tzinfo=None, microsecond=0)
 
         col3, col4 = st.columns(2)
 
@@ -168,6 +167,7 @@ elif option1 == 'Sales':
         to_time = col4.time_input(
             "Select a time:", default_time, step=300, key=4)
         to_datetime = datetime.combine(to_date, to_time)
+        to_datetime.replace(tzinfo=None, microsecond=0)
 
         submitted = st.button("Submit")
         if submitted:
@@ -195,6 +195,7 @@ elif option1 == 'Sales':
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         saletime = datetime.combine(to_date, to_time)
+        saletime.replace(tzinfo=None, microsecond=0)
 
         submitted = st.button("Submit")
         if submitted:
@@ -222,6 +223,7 @@ elif option1 == 'Sales':
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         saleTime = datetime.combine(to_date, to_time)
+        saleTime.replace(tzinfo=None, microsecond=0)
 
 
         submitted = st.button("Submit")
@@ -277,6 +279,7 @@ elif option1 == 'Reports':
     from_time = col2.time_input(
         "Select a time:", default_time, step=300, key=6)
     fromTime = datetime.combine(from_date, from_time)
+    fromTime.replace(tzinfo=None, microsecond=0)
 
     col3, col4 = st.columns(2)
     to_date = col3.date_input(
@@ -284,6 +287,7 @@ elif option1 == 'Reports':
     to_time = col4.time_input(
         "Select a time:", default_time, step=300, key=8)
     toTime = datetime.combine(to_date, to_time)
+    toTime.replace(tzinfo=None, microsecond=0)
 
     submitted = st.button("Submit")
     if submitted:
