@@ -3,9 +3,6 @@ import requests
 from datetime import datetime
 from datetime import time
 
-datetime.tzinfo = None
-datetime.microsecond = 0
-
 def main():
     st.title("HACKNU umag & zapis.kz case")
     st.subheader(':cake: by tortiki_remastered')
@@ -38,6 +35,8 @@ if option1 == 'Supply':
         from_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         from_datetime = datetime.combine(from_date, from_time)
+        from_datetime.microsecond = 0
+        from_datetime.tzinfo = None
 
         col3, col4 = st.columns(2)
 
@@ -46,6 +45,8 @@ if option1 == 'Supply':
         to_time = col4.time_input(
             "Select a time:", default_time, step=300, key=4)
         to_datetime = datetime.combine(to_date, to_time)
+        to_datetime.microsecond = 0
+        to_datetime.tzinfo = None
 
         submitted = st.button("Submit")
         if submitted:
@@ -73,6 +74,8 @@ if option1 == 'Supply':
         to_time = col2.time_input(
             "Select a time:", default_time, step=300, key=2)
         supplytime = datetime.combine(to_date, to_time)
+        supplytime.microsecond = 0
+        supplytime.tzinfo = None
 
         submitted = st.button("Submit")
         if submitted:
