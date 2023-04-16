@@ -3,6 +3,9 @@ import requests
 from datetime import datetime
 from datetime import time
 
+datetime.tzinfo = None
+datetime.microsecond = 0
+
 def main():
     st.title("HACKNU umag & zapis.kz case")
     st.subheader(':cake: by tortiki_remastered')
@@ -47,8 +50,8 @@ if option1 == 'Supply':
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/supplies/"
-            todo = {"fromTime": from_datetime.isoformat(),
-                    "toTime": to_datetime.isoformat(),
+            todo = {"fromTime": from_datetime.isoformat(sep=' '),
+                    "toTime": to_datetime.isoformat(sep=' '),
                     "barcode": barcode}
 
             response = requests.get(api_url, json=todo)
@@ -77,7 +80,7 @@ if option1 == 'Supply':
             todo = {"barcode": barcode,
                     "price": price, 
                     "quantity": quantity, 
-                    "supplyTime": supplytime.isoformat()}
+                    "supplyTime": supplytime.isoformat(sep=' ')}
             response = requests.post(api_url, json=todo)
             data = response.json()
             if data:
@@ -107,7 +110,7 @@ if option1 == 'Supply':
                     "barcode": barcode,
                     "price": price,
                     "quantity":quantity,
-                    "supplyTime": supplyTime.isoformat()
+                    "supplyTime": supplyTime.isoformat(sep=' ')
                     }
             response = requests.put(api_url, json=todo)
             if response.status_code == 200:
@@ -166,8 +169,8 @@ elif option1 == 'Sales':
         submitted = st.button("Submit")
         if submitted:
             api_url = "http://127.0.0.1:8000/api/sales/"
-            todo = {"fromTime": from_datetime.isoformat(),
-                    "toTime": to_datetime.isoformat(),
+            todo = {"fromTime": from_datetime.isoformat(sep=' '),
+                    "toTime": to_datetime.isoformat(sep=' '),
                     "barcode": barcode}
 
             response = requests.get(api_url, json=todo)
@@ -196,7 +199,7 @@ elif option1 == 'Sales':
             todo = {"barcode": barcode,
                     "price": price, 
                     "quantity": quantity, 
-                    "saleTime": saletime.isoformat()}
+                    "saleTime": saletime.isoformat(sep=' ')}
             response = requests.post(api_url, json=todo)
             data = response.json()
             if data:
@@ -226,7 +229,7 @@ elif option1 == 'Sales':
                     "barcode": barcode,
                     "price": price,
                     "quantity":quantity,
-                    "saleTime": saleTime.isoformat()
+                    "saleTime": saleTime.isoformat(sep=' ')
                     }
             response = requests.put(api_url, json=todo)
             if response.status_code == 200:
@@ -273,16 +276,17 @@ elif option1 == 'Reports':
     fromTime = datetime.combine(from_date, from_time)
 
     col3, col4 = st.columns(2)
-    to_date = col3.date_input("Enter end date and time",
-                              value=default_enddate, key=7)
-    to_time = col4.time_input("Select a time:", default_time, step=300, key=8)
+    to_date = col3.date_input(
+        "Enter end date and time", value=default_enddate, key=7)
+    to_time = col4.time_input(
+        "Select a time:", default_time, step=300, key=8)
     toTime = datetime.combine(to_date, to_time)
 
     submitted = st.button("Submit")
     if submitted:
         api_url = "http://127.0.0.1:8000/api/report/"
-        todo = {"fromTime": fromTime.isoformat(),
-                "toTime": toTime.isoformat(),
+        todo = {"fromTime": fromTime.isoformat(sep=' '),
+                "toTime": toTime.isoformat(sep=' '),
                 "barcode": barcode}
 
         response = requests.get(api_url, json=todo)

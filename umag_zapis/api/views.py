@@ -144,19 +144,11 @@ def getReport(request):
 
     supply_q = Q(barcode=barcode) & Q(supplyTime__lte=toTime)
 
-    supply = Supply.objects.filter(supply_q).values(
-        "quantity", "price", "supplyTime").order_by("supplyTime")
+    supply = Supply.objects.filter(supply_q).values("quantity", "price", "supplyTime").order_by("supplyTime")
 
     sale_q = Q(barcode=barcode) & Q(saleTime__lte=toTime)
 
     sale = Sale.objects.filter(sale_q).values("quantity", "price", "saleTime").order_by("saleTime")
-
-    # sale = Sale.objects.filter(barcode=barcode, saleTime__lte=toTime).values(
-    #     "quantity", "saleTime").order_by("saleTime")
-
-    # sale = Sale.objects.filter(
-    # barcode=barcode, saleTime__lte=toTime
-    # ).aggregate(total=Sum("quantity"))["total"]
 
     quantity = Sale.objects.filter(
         barcode=barcode, saleTime__range=(fromTime, toTime)
