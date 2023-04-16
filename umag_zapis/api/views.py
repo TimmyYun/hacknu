@@ -6,9 +6,6 @@ from rest_framework import status
 from django.db.models import Q, Sum, F
 from datetime import datetime
 
-import time
-
-
 @api_view(["GET"])
 def getRoutes(request):
     routes = [
@@ -136,8 +133,6 @@ def getSale(request, pk):
 
 @api_view(["GET", "POST"])
 def getReport(request):
-
-    startTime = time.time()
 
     fromTime = datetime.strptime(request.data["fromTime"], "%Y-%m-%dT%H:%M:%S")
     toTime = request.data["toTime"]
